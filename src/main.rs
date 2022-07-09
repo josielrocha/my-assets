@@ -118,13 +118,16 @@ impl Parser for NuInvestParser {
 
         for result in reader.deserialize() {
           let record: NuInvestOperation = result?;
-          // println!("{:?}", record);
           operations.push(Operation {
             negotiation_date: record.negotiation_date,
             asset_name: record.asset_name,
             trading_value: record.trading_value,
             quantity: record.quantity,
-            operation_type: if record.buy_amount > 0.0 { OperationType::Buy(String::from("C")) } else { OperationType::Sell(String::from("V")) },
+            operation_type: if record.buy_amount > 0.0 {
+              OperationType::Buy(String::from("C"))
+            } else {
+              OperationType::Sell(String::from("V"))
+            },
           });
         }
       }
