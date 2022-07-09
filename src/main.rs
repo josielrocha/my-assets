@@ -31,18 +31,14 @@ pub struct NuInvestOperation {
   account: u32,
   #[serde(rename="Ativo")]
   asset_name: String,
-  #[serde(rename="Preço")]
-  trading_value: String,
-  // trading_value: f64,
+  #[serde(rename="Preço", with="brazilian_float")]
+  trading_value: f64,
   #[serde(rename="Quantidade Compra")]
-  quantity: String,
-  // quantity: u64,
-  #[serde(rename="Financeiro Compra")]
-  // buy_amount: f64,
-  buy_amount: String,
-  #[serde(rename="Financeiro Venda")]
-  sell_amount: String
-  // sell_amount: f64
+  quantity: u64,
+  #[serde(rename="Financeiro Compra", with="brazilian_float")]
+  buy_amount: f64,
+  #[serde(rename="Financeiro Venda", with="brazilian_float")]
+  sell_amount: f64
 }
 
 mod brazilian_float {
@@ -67,11 +63,9 @@ mod brazilian_float {
   {
     let s = String::deserialize(deserializer)?;
     let n: f64 = s.trim().replace(",", ".").parse().unwrap();
-    println!("{}", s);
     Ok(n)
   }
 }
-
 
 mod brazilian_date {
   use chrono::{NaiveDate};
@@ -124,14 +118,14 @@ impl Parser for NuInvestParser {
 
         for result in reader.deserialize() {
           let record: NuInvestOperation = result?;
-          println!("{:?}", record);
-          // operations.push(Operation {
-            // negotiation_date: record.negotiation_date,
-            // asset_name: record.asset_name,
-            // trading_value: record.trading_value,
-            // quantity: record.quantity,
-            // operation_type: if record.buy_amount > 0.0 { OperationType::Buy(String::from("C")) } else { OperationType::Sell(String::from("V")) },
-          // });
+          // println!("{:?}", record);
+          operations.push(Operation {
+            negotiation_date: record.negotiation_date,
+            asset_name: record.asset_name,
+            trading_value: record.trading_value,
+            quantity: record.quantity,
+            operation_type: if record.buy_amount > 0.0 { OperationType::Buy(String::from("C")) } else { OperationType::Sell(String::from("V")) },
+          });
         }
       }
     }
