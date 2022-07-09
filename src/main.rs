@@ -133,8 +133,6 @@ impl Parser for NuInvestParser {
       }
     }
 
-    println!("{:?}", operations);
-
     Ok(operations)
   }
 }
@@ -146,6 +144,5 @@ impl Parser for NuInvestParser {
 // presentation - user interface (UI/CLI)
 
 fn main() {
-  // let operations: Vec<Operation> = NuInvestParser::parse_files();
   println!("{:?}", NuInvestParser::parse_files());
 }
