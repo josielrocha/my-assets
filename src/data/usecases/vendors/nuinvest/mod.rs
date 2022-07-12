@@ -1,7 +1,11 @@
 use chrono::{NaiveDate};
+use csv::{ReaderBuilder, Trim};
+use serde::{Deserialize};
+use std::error::{Error};
 use std::fs::{File};
 
-use crate::domain::usecases::{ParseFile};
+use crate::infra::serializers::{brazilian_date, brazilian_float};
+use crate::domain::{Operation, OperationType, Parser};
 
 // 02/09/2021;266253;MXRF11;9,94;6;0;59,64;0,00
 #[derive(Debug, Deserialize)]
@@ -25,7 +29,7 @@ pub struct NuInvestOperation {
 pub struct NuInvestParser;
 
 impl Parser for NuInvestParser {
-  fn parse_file(path) -> Result<Vec<Operation>, Box<dyn Error>> {
+  fn parse_file(&self, path: String) -> Result<Vec<Operation>, Box<dyn Error>> {
     let mut file = File::open(path)?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
@@ -39,7 +43,7 @@ impl Parser for NuInvestParser {
       .has_headers(true)
       .trim(Trim::All)
       .quote(b'"')
-      .from_path(filepath)?;
+      .from_path(path)?;
 
     for result in reader.deserialize() {
       let record: NuInvestOperation = result?;
@@ -59,4 +63,3 @@ impl Parser for NuInvestParser {
     Ok(operations)
   }
 }
-

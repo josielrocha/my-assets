@@ -21,21 +21,22 @@ pub struct Operation {
   pub operation_type: OperationType,
 }
 
+pub trait Parser {
+  fn parse_file(&self, path: String) -> Result<Vec<Operation>, Box<dyn Error>>;
+}
+
 pub trait DirParser {
   fn new(root_dir: String, parsers: Vec<Parser>) -> Self;
   fn parse(&self) -> Result<Vec<Operation>, Box<dyn Error>> {
     let mut operations: Vec<Operation> = Vec::new();
 
-    for parser of parsers {
+    // for file in WalkDir::new("./data/nuinvest").into_iter().filter_map(|file| file.ok()) {
+    for parser in &self.parsers {
       // For each parser traverse through eatch directory finding files
-      let mut ops = parser::parse_file();
+      let mut ops = parser.parse_file();
       operations.append()
     }
 
     operations;
   }
-}
-
-pub trait Parser {
-  fn parse_file(path: String) -> Result<Vec<Operation>, Box<dyn Error>>;
 }
