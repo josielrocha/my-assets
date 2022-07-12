@@ -1,4 +1,5 @@
 extern crate walkdir;
+
 use chrono::{NaiveDate};
 use csv::{ReaderBuilder, Trim};
 use serde::Deserialize;
@@ -6,98 +7,12 @@ use std::error::Error;
 use std::vec::{Vec};
 use walkdir::{WalkDir};
 
-#[derive(Debug, Deserialize)]
-enum OperationType {
-  Buy(String),
-  Sell(String),
-}
+pub mod domain;
+mod data;
+mod infra;
 
-#[derive(Debug, Deserialize)]
-pub struct Operation {
-  negotiation_date: NaiveDate,
-  asset_name: String,
-  trading_value: f64,
-  quantity: u64,
-  #[serde(flatten)]
-  operation_type: OperationType,
-}
-
-// 02/09/2021;266253;MXRF11;9,94;6;0;59,64;0,00
-#[derive(Debug, Deserialize)]
-pub struct NuInvestOperation {
-  #[serde(rename="Dt. Negociação", with="brazilian_date")]
-  negotiation_date: NaiveDate,
-  #[serde(rename="Conta")]
-  account: u32,
-  #[serde(rename="Ativo")]
-  asset_name: String,
-  #[serde(rename="Preço", with="brazilian_float")]
-  trading_value: f64,
-  #[serde(rename="Quantidade Compra")]
-  quantity: u64,
-  #[serde(rename="Financeiro Compra", with="brazilian_float")]
-  buy_amount: f64,
-  #[serde(rename="Financeiro Venda", with="brazilian_float")]
-  sell_amount: f64
-}
-
-mod brazilian_float {
-  use serde::{Deserialize, Serializer, Deserializer};
-
-  pub fn serialize<S>(
-    value: &f64,
-    serializer: S,
-  ) -> Result<S::Ok, S::Error>
-  where
-    S: Serializer,
-  {
-    let s = value.to_string().replace(".", ",");
-    serializer.serialize_str(&s)
-  }
-
-  pub fn deserialize<'de, D>(
-    deserializer: D,
-  ) -> Result<f64, D::Error>
-  where
-    D: Deserializer<'de>,
-  {
-    let s = String::deserialize(deserializer)?;
-    let n: f64 = s.trim().replace(",", ".").parse().unwrap();
-    Ok(n)
-  }
-}
-
-mod brazilian_date {
-  use chrono::{NaiveDate};
-  use serde::{Deserialize, Serializer, Deserializer};
-
-  const FORMAT: &'static str = "%d/%m/%Y";
-
-  pub fn serialize<S>(
-    date: &NaiveDate,
-    serializer: S,
-  ) -> Result<S::Ok, S::Error>
-  where
-    S: Serializer,
-  {
-    let s = format!("{}", date.format(FORMAT));
-    serializer.serialize_str(&s)
-  }
-
-  pub fn deserialize<'de, D>(
-    deserializer: D,
-  ) -> Result<NaiveDate, D::Error>
-  where
-    D: Deserializer<'de>,
-  {
-    let s = String::deserialize(deserializer)?;
-    NaiveDate::parse_from_str(&s, FORMAT).map_err(serde::de::Error::custom)
-  }
-}
-
-pub trait Parser {
-  fn parse_files() -> Result<Vec<Operation>, Box<dyn Error>>;
-}
+use crate::infra::serializers::{brazilian_date, brazilian_float};
+use crate::domain::{Operation, OperationType};
 
 struct NuInvestParser {}
 
