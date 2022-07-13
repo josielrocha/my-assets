@@ -1,14 +1,13 @@
-extern crate walkdir;
-
 use std::env::{current_dir};
 use std::path::{Path};
-
-use crate::domain::{DirParser};
-use crate::data::usecases::vendors::nuinvest::{NuInvestParser};
+// use std::vec::{Vec};
 
 mod domain;
 mod data;
 mod infra;
+
+// use crate::domain::{Operation};
+use crate::data::usecases::vendors::nuinvest::{NuInvestParser};
 
 // data - concrete methods and entities
 // domain - use_cases and entities
@@ -19,10 +18,14 @@ mod infra;
 fn main() -> std::io::Result<()> {
   let base_dir = current_dir()?.display().to_string();
   let data_directory = Path::new(&base_dir).join("data");
-  let data_dir_as_string = format!("{}", data_directory.display());
+  let nuinvest_data = &data_directory.join("nuinvest");
 
-  let parsers = vec![NuInvestParser {}];
-  let dir_parser = DirParser::new(data_dir_as_string, parsers);
+  let parser: NuInvestParser = NuInvestParser::new(format!("{}", nuinvest_data.display()));
+  let operations = parser.parse_files().unwrap();
+
+  for operation in operations {
+    println!("{:?}", operation);
+  }
 
   Ok(())
 }
